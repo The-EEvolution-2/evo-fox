@@ -113,7 +113,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenVaultModal }) => {
       id: "calendar",
       label: "Monthly Calendar",
       icon: CalendarDays,
-      badge: "Month",
+      badge: null,
       color: "text-[#2563EB]",
       activeBg: "bg-[#EFF6FF] border-[#2563EB] text-[#1E40AF]",
       badgeStyle: "bg-[#DBEAFE] text-[#1E40AF] border-[#BFDBFE]",
@@ -122,7 +122,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenVaultModal }) => {
       id: "notepad",
       label: "Notepad & Notes",
       icon: StickyNote,
-      badge: `${(store.notes || []).length}`,
+      badge: (store.notes || []).length > 0 ? `${(store.notes || []).length}` : null,
       color: "text-[#D97706]",
       activeBg: "bg-[#FFFBEB] border-[#D97706] text-[#92400E]",
       badgeStyle: "bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]",
@@ -140,7 +140,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenVaultModal }) => {
       id: "profile",
       label: "Scholar Profile",
       icon: UserCircle,
-      badge: "ID",
+      badge: null,
       color: "text-[#4F46E5]",
       activeBg: "bg-[#EEF2FF] border-[#4F46E5] text-[#3730A3]",
       badgeStyle: "bg-[#E0E7FF] text-[#3730A3] border-[#C7D2FE]",
@@ -149,7 +149,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenVaultModal }) => {
       id: "docs",
       label: "About & Docs",
       icon: HelpCircle,
-      badge: "Manual",
+      badge: null,
       color: "text-[#0891B2]",
       activeBg: "bg-[#ECFEFF] border-[#0891B2] text-[#155E75]",
       badgeStyle: "bg-[#CFFAFE] text-[#155E75] border-[#A5F3FC]",
@@ -221,7 +221,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenVaultModal }) => {
                   <div className="flex-1 flex items-center justify-between ml-3 overflow-hidden">
                     <span className="text-sm truncate">{item.label}</span>
                     {item.badge && (
-                      <span className={`font-mono text-xs px-2 py-0.5 rounded-full font-bold border ${item.badgeStyle}`}>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-bold border ${item.badgeStyle}`}>
                         {item.badge}
                       </span>
                     )}
@@ -257,7 +257,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenVaultModal }) => {
             {!sidebarCollapsed && <span className="font-semibold text-xs">Vault & JSON Backup</span>}
           </div>
           {!sidebarCollapsed && (
-            <span className="text-[11px] font-mono uppercase font-bold text-slate-700 border border-slate-200 px-1.5 py-0.5 rounded-sm bg-white">Local</span>
+            <span className="text-[11px] uppercase font-bold text-slate-700 border border-slate-200 px-1.5 py-0.5 rounded-sm bg-white">Local</span>
           )}
         </button>
       </div>
