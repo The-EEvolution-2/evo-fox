@@ -158,7 +158,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenVaultModal }) => {
 
   return (
     <aside
-      className={`h-screen sticky top-0 bg-[#F9FAFB] border-r border-[#D1D5DB] flex flex-col justify-between shrink-0 transition-all duration-150 z-30 select-none print:hidden ${
+      className={`hidden md:flex h-screen sticky top-0 bg-[#F9FAFB] border-r border-[#D1D5DB] flex-col justify-between shrink-0 transition-all duration-150 z-30 select-none print:hidden ${
         sidebarCollapsed ? "w-16" : "w-64"
       }`}
     >
@@ -169,11 +169,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenVaultModal }) => {
             <div className="flex items-center gap-2.5 overflow-hidden">
               <img
                 src="/logo.png"
-                alt="Edu Command Logo"
+                alt="AuraEdu Logo"
                 className="w-8 h-8 rounded-lg object-cover shadow-xs border border-blue-200"
               />
               <span className="font-bold text-sm tracking-tight text-slate-900">
-                Edu Command
+                AuraEdu
               </span>
             </div>
           )}

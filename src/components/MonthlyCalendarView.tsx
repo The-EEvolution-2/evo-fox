@@ -256,7 +256,7 @@ export function MonthlyCalendarView() {
                 <div
                   key={cell.dateStr}
                   onClick={() => setSelectedDateStr(cell.dateStr)}
-                  className={`min-h-[105px] p-2 flex flex-col justify-between cursor-pointer transition-all ${
+                  className={`min-h-[64px] sm:min-h-[105px] p-1.5 sm:p-2 flex flex-col justify-between cursor-pointer transition-all ${
                     !cell.isCurrentMonth
                       ? "bg-[#FAFAFA] text-[#9CA3AF]"
                       : "bg-white text-[#111827] hover:bg-[#F0FDF4]/40"
@@ -268,7 +268,7 @@ export function MonthlyCalendarView() {
                 >
                   <div className="flex items-center justify-between">
                     <span
-                      className={`text-xs font-semibold rounded-full w-6 h-6 flex items-center justify-center ${
+                      className={`text-[11px] sm:text-xs font-semibold rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center ${
                         isToday
                           ? "bg-[#2563EB] text-white font-bold"
                           : isSelected
@@ -280,8 +280,9 @@ export function MonthlyCalendarView() {
                     </span>
 
                     {totalItems > 0 && (
-                      <span className="text-[10px] font-bold text-[#6B7280]">
-                        {totalItems} {totalItems === 1 ? "item" : "items"}
+                      <span className="text-[9px] sm:text-[10px] font-bold text-[#6B7280]">
+                        <span className="hidden sm:inline">{totalItems} {totalItems === 1 ? "item" : "items"}</span>
+                        <span className="sm:hidden font-extrabold text-blue-600">●{totalItems}</span>
                       </span>
                     )}
                   </div>

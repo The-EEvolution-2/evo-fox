@@ -204,11 +204,43 @@ export const TermsView: React.FC = () => {
 
       {/* Two-Column Master / Detail Layout (Zero long scroll required to change topics) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
-        {/* Left Column: Topics & Subtopics Selector Navigation (Master Panel) */}
-        <div className="lg:col-span-4 bg-white border border-[#E5E7EB] rounded-xl overflow-hidden shadow-xs">
+        {/* Mobile Topic Pill Scroller (Visible on mobile, hidden on lg screens) */}
+        <div className="lg:hidden bg-white border border-[#E5E7EB] rounded-xl p-2.5 shadow-xs flex items-center gap-2 overflow-x-auto no-scrollbar">
+          <span className="text-[11px] font-bold text-slate-500 uppercase shrink-0">Topic:</span>
+          {allTopics.map((topicName) => {
+            const isSelected = activeTopic === topicName;
+            const topicTerms = store.terms.filter((t) => t.topic === topicName);
+            const topicLearned = topicTerms.filter((t) => t.learned).length;
+
+            return (
+              <button
+                key={topicName}
+                onClick={() => {
+                  setSelectedTopic(topicName);
+                  setSelectedSubtopic("All");
+                }}
+                className={`h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 flex items-center gap-1.5 transition-all ${
+                  isSelected
+                    ? "bg-blue-600 text-white shadow-xs"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                <span>{topicName}</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                  isSelected ? "bg-white/20 text-white" : "bg-white text-slate-600"
+                }`}>
+                  {topicLearned}/{topicTerms.length}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Left Column: Topics & Subtopics Selector Navigation (Master Panel - Desktop only) */}
+        <div className="hidden lg:block lg:col-span-4 bg-white border border-[#E5E7EB] rounded-xl overflow-hidden shadow-xs">
           <div className="h-9 border-b border-[#E5E7EB] px-3.5 flex items-center justify-between bg-[#F8FAFC]">
             <span className="sub-label text-[11px]">Topics ({allTopics.length})</span>
-            <span className="font-mono text-[10px] text-[#71717A]">Master Selector</span>
+            <span className="text-[10px] text-[#71717A] font-semibold">Master Selector</span>
           </div>
 
           <div className="divide-y divide-[#E4E4E7]">

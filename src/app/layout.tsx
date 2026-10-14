@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Edu Command - Personal Study & Operating System",
-  description: "Personal study curriculum, term mastery, financial tracker, and academic planner.",
+  title: "AuraEdu - Academic OS & Productivity Suite",
+  description: "Personal study curriculum, term mastery, multi-mode financial ledger, and focus workflow suite.",
   icons: {
     icon: [
       { url: "/logo.png" },

@@ -17,6 +17,7 @@ import { DocsView } from "@/components/DocsView";
 import { MonthlyCalendarView } from "@/components/MonthlyCalendarView";
 import { ProfileView } from "@/components/ProfileView";
 import { NotepadView } from "@/components/NotepadView";
+import { MobileNavBar } from "@/components/MobileNavBar";
 import { QuickAddModal } from "@/components/QuickAddModal";
 import { VaultModal } from "@/components/VaultModal";
 import { PomodoroModal } from "@/components/PomodoroModal";
@@ -29,20 +30,26 @@ function AppShell() {
   const [pomodoroOpen, setPomodoroOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-transparent text-[#09090B] flex flex-row antialiased selection:bg-[#18181B] selection:text-white">
-      {/* Sidebar (Fixed/Sticky Left) */}
+    <div className="min-h-screen bg-transparent text-[#09090B] flex flex-col md:flex-row antialiased selection:bg-[#18181B] selection:text-white">
+      {/* Mobile Top Header and Bottom App Bar */}
+      <MobileNavBar 
+        onQuickAdd={() => setQuickAddOpen(true)}
+        onOpenPomodoro={() => setPomodoroOpen(true)}
+      />
+
+      {/* Desktop Sidebar (Fixed Left) */}
       <Sidebar onOpenVaultModal={() => setVaultOpen(true)} />
 
       {/* Main Content Column */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
-        {/* Top Bar with Search & Shortcuts */}
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen pb-16 md:pb-0">
+        {/* Desktop Top Bar */}
         <TopBar 
           onQuickAdd={() => setQuickAddOpen(true)} 
           onOpenPomodoro={() => setPomodoroOpen(true)}
         />
 
         {/* Dynamic Editorial View Container */}
-        <main className="flex-1 px-5 py-4 w-full">
+        <main className="flex-1 px-3 py-3 md:px-5 md:py-4 w-full">
           {activeView === "overview" && <OverviewView onNavigate={setActiveView} />}
           {activeView === "terms" && <TermsView />}
           {activeView === "money" && <MoneyView />}
