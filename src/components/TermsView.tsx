@@ -156,19 +156,21 @@ export const TermsView: React.FC = () => {
 
   return (
     <div className="space-y-3.5">
-      {/* Top Header Card */}
-      <div className="bg-white border border-[#E5E7EB] rounded-xl p-3.5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+      {/* Top Header Card - Clean & Focused on Mobile */}
+      <div className="bg-white border border-[#E5E7EB] rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center justify-between gap-3">
         <div>
-          <span className="sub-label text-[11px]">Mastery Roadmap</span>
-          <h2 className="text-sm font-bold text-[#09090B] mt-0.5">
-            Step-by-Step Learning Terms
+          <h2 className="text-sm font-bold text-[#09090B]">
+            Learning Terms
           </h2>
-          <p className="text-xs text-[#6B7280]">
-            Categorized strictly by Topic & Subtopic. Switch topics in the left pane without excessive scrolling.
+          <p className="hidden sm:block text-xs text-[#6B7280] mt-0.5">
+            Categorized strictly by Topic & Subtopic. Switch topics without excessive scrolling.
           </p>
+          <div className="sm:hidden text-[11px] text-blue-600 font-semibold mt-0.5">
+            {learnedCount}/{totalTermsCount} learned ({progressPct}%)
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <div className="text-right hidden sm:block">
             <div className="text-sm font-bold font-mono text-[#09090B] tabular-nums">
               {learnedCount} / {totalTermsCount} Learned
@@ -178,27 +180,26 @@ export const TermsView: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsBulkImportOpen(true)}
-              className="h-8 px-3 border border-[#D1D5DB] hover:border-[#18181B] bg-white rounded-lg text-xs font-medium text-[#09090B] hover:bg-[#FAFAFA] flex items-center gap-1.5 transition-colors"
-              title="Bulk import terms via JSON format"
-            >
-              <FileCode className="w-3.5 h-3.5 text-[#18181B]" />
-              <span>Import JSON</span>
-            </button>
+          {/* Bulk Import hidden on mobile to eliminate clutter */}
+          <button
+            onClick={() => setIsBulkImportOpen(true)}
+            className="hidden sm:flex h-8 px-3 border border-[#D1D5DB] hover:border-[#18181B] bg-white rounded-lg text-xs font-medium text-[#09090B] hover:bg-[#FAFAFA] items-center gap-1.5 transition-colors"
+            title="Bulk import terms via JSON format"
+          >
+            <FileCode className="w-3.5 h-3.5 text-[#18181B]" />
+            <span>Import JSON</span>
+          </button>
 
-            <button
-              onClick={() => {
-                setNewTopic(activeTopic);
-                setIsAddModalOpen(true);
-              }}
-              className="h-8 px-3 bg-[#18181B] text-white text-xs font-medium hover:bg-[#27272A] rounded-lg flex items-center gap-1.5 transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add Term</span>
-            </button>
-          </div>
+          <button
+            onClick={() => {
+              setNewTopic(activeTopic);
+              setIsAddModalOpen(true);
+            }}
+            className="h-8 px-3 bg-[#18181B] text-white text-xs font-medium hover:bg-[#27272A] rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Term</span>
+          </button>
         </div>
       </div>
 

@@ -260,39 +260,42 @@ export const MoneyView: React.FC = () => {
       {/* Screen-Only Views (Hidden on Print) */}
       <div className="space-y-6 print:hidden">
       {/* Top Banner with Action Button & Print */}
-      <div className="bg-white border border-[#E5E7EB] rounded-xl p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-[#E5E7EB] rounded-xl p-3.5 sm:p-4 shadow-xs flex items-center justify-between gap-3">
         <div>
-          <span className="sub-label">Financial Control</span>
-          <h2 className="text-base font-bold text-[#09090B] mt-0.5">
-            Pocket Money & Expense Allocations
+          <h2 className="text-sm sm:text-base font-bold text-[#09090B]">
+            Money Management
           </h2>
-          <p className="text-xs text-[#71717A] mt-0.5">
-            Track combined net wealth, Cash in Hand, and Online account balances with instant print reports.
+          <p className="hidden sm:block text-xs text-[#71717A] mt-0.5">
+            Track combined net wealth, Cash in Hand, and Online account balances.
           </p>
+          <div className="sm:hidden text-xs font-bold text-slate-800 mt-0.5">
+            Net: <span className={remainingBudget < 0 ? "text-rose-600" : "text-emerald-700"}>₹{remainingBudget}</span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Print button is only useful on desktop */}
           <button
             onClick={() => window.print()}
-            className="h-8 px-3.5 bg-white border border-[#D1D5DB] text-[#374151] hover:bg-slate-50 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
+            className="hidden sm:flex h-8 px-3.5 bg-white border border-[#D1D5DB] text-[#374151] hover:bg-slate-50 text-xs font-semibold rounded-lg items-center gap-1.5 transition-colors shadow-xs"
             title="Print Monthly Expenses & Inflows Statement"
           >
             <Printer className="w-3.5 h-3.5 text-slate-600" />
-            <span>Print Monthly Report</span>
+            <span>Print Report</span>
           </button>
 
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="h-8 px-3.5 bg-[#18181B] text-white text-xs font-medium hover:bg-[#27272A] rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
+            className="h-8 px-3 sm:px-3.5 bg-[#18181B] text-white text-xs font-medium hover:bg-[#27272A] rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Record Transaction</span>
+            <span>Record</span>
           </button>
         </div>
       </div>
 
-      {/* Cash + Online Combined Multi-Mode Balance Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+      {/* Cash + Online Combined Multi-Mode Balance Cards (2x2 on Mobile, 4 on Desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
         {/* Card 1: Combined Net Balance */}
         <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-xl p-4 shadow-sm border border-slate-700">
           <div className="flex items-center justify-between opacity-80">
@@ -371,8 +374,8 @@ export const MoneyView: React.FC = () => {
         </div>
       </div>
 
-      {/* Purpose Allocation Bar Breakdown */}
-      <div className="bg-white border border-[#E4E4E7] p-5">
+      {/* Purpose Allocation Bar Breakdown - Desktop only */}
+      <div className="hidden sm:block bg-white border border-[#E4E4E7] rounded-xl p-5 shadow-xs">
         <div className="flex items-center justify-between border-b border-[#E4E4E7] pb-3 mb-4">
           <div>
             <span className="sub-label">Expense Purpose Allocation</span>
@@ -414,40 +417,40 @@ export const MoneyView: React.FC = () => {
 
       {/* Filter and Transaction Table */}
       <div className="bg-white border border-[#E4E4E7]">
-        <div className="h-10 border-b border-[#E4E4E7] px-4 flex flex-wrap items-center justify-between bg-[#FAFAFA] text-xs">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-[#71717A]">
+        <div className="h-10 border-b border-[#E4E4E7] px-3 sm:px-4 flex items-center justify-between bg-[#FAFAFA] text-xs">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="hidden sm:flex items-center gap-1.5 text-[#71717A]">
               <Filter className="w-3.5 h-3.5" />
               <span className="sub-label">Filter:</span>
             </div>
 
             <div className="flex items-center gap-1.5">
-              <span className="text-[#71717A]">Type:</span>
+              <span className="text-[#71717A] text-[11px] sm:text-xs">Type:</span>
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="h-7 border border-[#E4E4E7] rounded-md px-2 bg-white text-[#09090B]"
+                className="h-7 border border-[#E4E4E7] rounded-md px-1.5 sm:px-2 bg-white text-[#09090B] text-xs"
               >
-                <option value="All">All Types</option>
-                <option value="Expense">Expense Only</option>
-                <option value="Income">Income Only</option>
+                <option value="All">All</option>
+                <option value="Expense">Expense</option>
+                <option value="Income">Income</option>
               </select>
             </div>
 
             <div className="flex items-center gap-1.5">
-              <span className="text-[#71717A]">Mode:</span>
+              <span className="text-[#71717A] text-[11px] sm:text-xs">Mode:</span>
               <select
                 value={filterMode}
                 onChange={(e) => setFilterMode(e.target.value)}
-                className="h-7 border border-[#E4E4E7] rounded-md px-2 bg-white text-[#09090B]"
+                className="h-7 border border-[#E4E4E7] rounded-md px-1.5 sm:px-2 bg-white text-[#09090B] text-xs"
               >
-                <option value="All">All Modes</option>
-                <option value="Cash">Cash in Hand</option>
-                <option value="Online">Online / UPI</option>
+                <option value="All">All</option>
+                <option value="Cash">Cash</option>
+                <option value="Online">Online</option>
               </select>
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div className="hidden md:flex items-center gap-1.5">
               <span className="text-[#71717A]">Purpose:</span>
               <select
                 value={filterPurpose}
@@ -464,8 +467,8 @@ export const MoneyView: React.FC = () => {
             </div>
           </div>
 
-          <span className="text-xs font-mono text-[#71717A]">
-            {filteredRecords.length} Transactions Found
+          <span className="text-[11px] sm:text-xs font-mono text-[#71717A]">
+            {filteredRecords.length} items
           </span>
         </div>
 
@@ -473,14 +476,14 @@ export const MoneyView: React.FC = () => {
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-[#E4E4E7] bg-white text-[#71717A] font-mono">
-                <th className="p-3 w-16 uppercase tracking-wider text-[11px]">ID</th>
-                <th className="p-3 w-20 uppercase tracking-wider text-[11px]">Type</th>
-                <th className="p-3 w-24 uppercase tracking-wider text-[11px]">Mode</th>
-                <th className="p-3 uppercase tracking-wider text-[11px]">Description & Notes</th>
-                <th className="p-3 w-36 uppercase tracking-wider text-[11px]">Purpose Category</th>
-                <th className="p-3 w-28 uppercase tracking-wider text-[11px]">Date</th>
-                <th className="p-3 w-28 text-right uppercase tracking-wider text-[11px]">Amount</th>
-                <th className="p-3 w-14 text-right uppercase tracking-wider text-[11px]">Act</th>
+                <th className="hidden sm:table-cell p-3 w-16 uppercase tracking-wider text-[11px]">ID</th>
+                <th className="p-2.5 sm:p-3 w-16 sm:w-20 uppercase tracking-wider text-[10px] sm:text-[11px]">Type</th>
+                <th className="p-2.5 sm:p-3 w-16 sm:w-24 uppercase tracking-wider text-[10px] sm:text-[11px]">Mode</th>
+                <th className="p-2.5 sm:p-3 uppercase tracking-wider text-[10px] sm:text-[11px]">Description</th>
+                <th className="hidden md:table-cell p-3 w-36 uppercase tracking-wider text-[11px]">Purpose</th>
+                <th className="p-2.5 sm:p-3 w-20 sm:w-28 uppercase tracking-wider text-[10px] sm:text-[11px]">Date</th>
+                <th className="p-2.5 sm:p-3 w-20 sm:w-28 text-right uppercase tracking-wider text-[10px] sm:text-[11px]">Amount</th>
+                <th className="p-2.5 sm:p-3 w-10 sm:w-14 text-right uppercase tracking-wider text-[10px] sm:text-[11px]">Act</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E4E4E7]">

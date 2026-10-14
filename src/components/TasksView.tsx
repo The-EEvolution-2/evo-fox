@@ -70,22 +70,22 @@ export const TasksView: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* Table Filter Controls Header */}
-      <div className="bg-white border border-[#E4E4E7] p-3 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1.5 text-xs text-[#71717A]">
+      {/* Table Filter Controls Header - Streamlined for Mobile */}
+      <div className="bg-white border border-[#E4E4E7] rounded-xl p-2.5 sm:p-3 flex items-center justify-between gap-2 text-xs">
+        <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-1.5 text-[#71717A]">
             <Filter className="w-3.5 h-3.5" />
             <span className="sub-label">Filters:</span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-[#71717A]">Domain:</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[#71717A] text-[11px] sm:text-xs">Domain:</span>
             <select
               value={filterModule}
               onChange={(e) => setFilterModule(e.target.value)}
-              className="h-7 border border-[#E4E4E7] text-xs px-2 bg-white text-[#09090B]"
+              className="h-7 border border-[#E4E4E7] rounded-lg text-xs px-1.5 sm:px-2 bg-white text-[#09090B]"
             >
-              <option value="All">All Domains</option>
+              <option value="All">All</option>
               <option value="Study">Study</option>
               <option value="Engineering">Engineering</option>
               <option value="Career">Career</option>
@@ -93,23 +93,23 @@ export const TasksView: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-[#71717A]">Status:</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[#71717A] text-[11px] sm:text-xs">Status:</span>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="h-7 border border-[#E4E4E7] text-xs px-2 bg-white text-[#09090B]"
+              className="h-7 border border-[#E4E4E7] rounded-lg text-xs px-1.5 sm:px-2 bg-white text-[#09090B]"
             >
-              <option value="All">All Statuses</option>
+              <option value="All">All</option>
               <option value="Backlog">Backlog</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Completed">Completed</option>
+              <option value="In Progress">Active</option>
+              <option value="Completed">Done</option>
             </select>
           </div>
         </div>
 
-        <div className="text-xs font-mono text-[#71717A]">
-          Showing {filteredTasks.length} of {store.tasks.length} items
+        <div className="text-[11px] sm:text-xs font-mono text-[#71717A]">
+          {filteredTasks.length} items
         </div>
       </div>
 
@@ -120,7 +120,7 @@ export const TasksView: React.FC = () => {
             <tr className="border-b border-[#D1D5DB] bg-[#F9FAFB] text-black sticky top-0 font-mono font-bold">
               <th
                 onClick={() => handleSort("id")}
-                className="p-3.5 w-24 cursor-pointer hover:bg-[#E5E7EB] uppercase tracking-wider text-xs font-bold"
+                className="hidden sm:table-cell p-3.5 w-24 cursor-pointer hover:bg-[#E5E7EB] uppercase tracking-wider text-xs font-bold"
               >
                 <div className="flex items-center gap-1.5">
                   ID <ArrowUpDown className="w-3.5 h-3.5 text-black" />
@@ -128,15 +128,15 @@ export const TasksView: React.FC = () => {
               </th>
               <th
                 onClick={() => handleSort("title")}
-                className="p-3.5 cursor-pointer hover:bg-[#E5E7EB] uppercase tracking-wider text-xs font-bold"
+                className="p-3 sm:p-3.5 cursor-pointer hover:bg-[#E5E7EB] uppercase tracking-wider text-xs font-bold"
               >
                 <div className="flex items-center gap-1.5">
-                  Task Item Title <ArrowUpDown className="w-3.5 h-3.5 text-black" />
+                  Task Title <ArrowUpDown className="w-3.5 h-3.5 text-black" />
                 </div>
               </th>
               <th
                 onClick={() => handleSort("module")}
-                className="p-3.5 w-36 cursor-pointer hover:bg-[#E5E7EB] uppercase tracking-wider text-xs font-bold"
+                className="hidden md:table-cell p-3.5 w-36 cursor-pointer hover:bg-[#E5E7EB] uppercase tracking-wider text-xs font-bold"
               >
                 <div className="flex items-center gap-1.5">
                   Domain <ArrowUpDown className="w-3.5 h-3.5 text-black" />
@@ -144,7 +144,7 @@ export const TasksView: React.FC = () => {
               </th>
               <th
                 onClick={() => handleSort("priority")}
-                className="p-3.5 w-28 cursor-pointer hover:bg-[#E5E7EB] uppercase tracking-wider text-xs font-bold"
+                className="hidden sm:table-cell p-3.5 w-28 cursor-pointer hover:bg-[#E5E7EB] uppercase tracking-wider text-xs font-bold"
               >
                 <div className="flex items-center gap-1.5">
                   Priority <ArrowUpDown className="w-3.5 h-3.5 text-black" />
@@ -152,7 +152,7 @@ export const TasksView: React.FC = () => {
               </th>
               <th
                 onClick={() => handleSort("status")}
-                className="p-3.5 w-36 cursor-pointer hover:bg-[#E5E7EB] uppercase tracking-wider text-xs font-bold"
+                className="p-2.5 sm:p-3.5 w-24 sm:w-36 cursor-pointer hover:bg-[#E5E7EB] uppercase tracking-wider text-xs font-bold"
               >
                 <div className="flex items-center gap-1.5">
                   Status <ArrowUpDown className="w-3.5 h-3.5 text-black" />
@@ -160,14 +160,14 @@ export const TasksView: React.FC = () => {
               </th>
               <th
                 onClick={() => handleSort("dueDate")}
-                className="p-3.5 w-32 cursor-pointer hover:bg-[#E5E7EB] uppercase tracking-wider text-xs font-bold"
+                className="hidden sm:table-cell p-3.5 w-32 cursor-pointer hover:bg-[#E5E7EB] uppercase tracking-wider text-xs font-bold"
               >
                 <div className="flex items-center gap-1.5">
                   Due Date <ArrowUpDown className="w-3.5 h-3.5 text-black" />
                 </div>
               </th>
-              <th className="p-3.5 w-24 text-right uppercase tracking-wider text-xs font-bold">
-                Actions
+              <th className="p-2.5 sm:p-3.5 w-16 sm:w-24 text-right uppercase tracking-wider text-xs font-bold">
+                Act
               </th>
             </tr>
           </thead>
@@ -184,32 +184,37 @@ export const TasksView: React.FC = () => {
 
                 return (
                   <tr key={task.id} className="hover:bg-[#F9FAFB] transition-colors">
-                    {/* ID */}
-                    <td className="p-3.5 font-mono text-xs font-bold text-black">{task.id}</td>
+                    {/* ID - Hidden on mobile */}
+                    <td className="hidden sm:table-cell p-3.5 font-mono text-xs font-bold text-black">{task.id}</td>
 
                     {/* Title */}
-                    <td className="p-3.5">
+                    <td className="p-2.5 sm:p-3.5">
                       {isEditing ? (
                         <input
                           type="text"
                           value={editTitle}
                           onChange={(e) => setEditTitle(e.target.value)}
-                          className="w-full h-8 px-2.5 border border-black text-sm text-black font-medium"
+                          className="w-full h-8 px-2 border border-black text-xs sm:text-sm text-black font-medium rounded"
                           autoFocus
                         />
                       ) : (
-                        <span
-                          className={`font-semibold ${
-                            task.status === "Completed" ? "line-through text-[#6B7280]" : "text-black"
-                          }`}
-                        >
-                          {task.title}
-                        </span>
+                        <div>
+                          <span
+                            className={`font-semibold text-xs sm:text-sm ${
+                              task.status === "Completed" ? "line-through text-[#6B7280]" : "text-black"
+                            }`}
+                          >
+                            {task.title}
+                          </span>
+                          <div className="sm:hidden text-[10px] text-slate-500 font-semibold mt-0.5">
+                            {task.module} • Due {task.dueDate}
+                          </div>
+                        </div>
                       )}
                     </td>
 
-                    {/* Module with Domain Color Badge */}
-                    <td className="p-3.5">
+                    {/* Module with Domain Color Badge - Hidden on small mobile */}
+                    <td className="hidden md:table-cell p-3.5">
                       <span className={`font-mono text-xs font-bold uppercase px-2 py-0.5 border ${
                         task.module === "Study"
                           ? "bg-[#EFF6FF] text-[#1E40AF] border-[#BFDBFE]"
@@ -223,8 +228,8 @@ export const TasksView: React.FC = () => {
                       </span>
                     </td>
 
-                    {/* Priority with Alert Colors */}
-                    <td className="p-3.5">
+                    {/* Priority with Alert Colors - Hidden on small mobile */}
+                    <td className="hidden sm:table-cell p-3.5">
                       {isEditing ? (
                         <select
                           value={editPriority}
@@ -249,12 +254,12 @@ export const TasksView: React.FC = () => {
                     </td>
 
                     {/* Status with Active Pill Colors */}
-                    <td className="p-3.5">
+                    <td className="p-2 sm:p-3.5">
                       {isEditing ? (
                         <select
                           value={editStatus}
                           onChange={(e) => setEditStatus(e.target.value as any)}
-                          className="h-8 border border-[#18181B] text-xs px-1 bg-white"
+                          className="h-7 border border-[#18181B] text-xs px-1 bg-white rounded"
                         >
                           <option value="Backlog">Backlog</option>
                           <option value="In Progress">In Progress</option>
@@ -262,7 +267,7 @@ export const TasksView: React.FC = () => {
                         </select>
                       ) : (
                         <span
-                          className={`font-mono text-xs font-bold px-2 py-0.5 border ${
+                          className={`font-mono text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 border rounded ${
                             task.status === "Completed"
                               ? "bg-[#ECFDF5] text-[#065F46] border-[#A7F3D0]"
                               : task.status === "In Progress"
@@ -275,8 +280,8 @@ export const TasksView: React.FC = () => {
                       )}
                     </td>
 
-                    {/* Due Date */}
-                    <td className="p-3.5 font-mono text-xs text-[#374151] font-semibold">{task.dueDate}</td>
+                    {/* Due Date - Hidden on mobile */}
+                    <td className="hidden sm:table-cell p-3.5 font-mono text-xs text-[#374151] font-semibold">{task.dueDate}</td>
 
                     {/* Inline actions */}
                     <td className="p-3 text-right">

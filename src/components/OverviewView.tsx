@@ -52,86 +52,86 @@ export const OverviewView: React.FC<{ onNavigate: (view: string) => void }> = ({
   const maxMinutes = Math.max(...studyDays.map((d) => d.minutes), 60);
 
   return (
-    <div className="space-y-6">
-      {/* 4 Stat Cards Row - Clean Borderless Separator Style with Vibrant Accents */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white border border-[#D1D5DB] p-2 divide-y sm:divide-y-0 sm:divide-x divide-[#D1D5DB]">
+    <div className="space-y-4 md:space-y-6">
+      {/* 4 Stat Cards Row - Compact 2x2 Grid on Mobile for Instant Scannability */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 bg-white border border-[#D1D5DB] rounded-xl p-2.5 sm:p-2 divide-y-0 divide-x-0 sm:divide-x divide-[#D1D5DB]">
         {/* Card 1 - Study */}
-        <div className="p-4 space-y-1">
+        <div className="p-2.5 sm:p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs font-bold uppercase text-[#2563EB]">Study Invested</span>
-            <div className="w-7 h-7 bg-[#EFF6FF] border border-[#BFDBFE] flex items-center justify-center text-[#2563EB]">
-              <BookOpen className="w-4 h-4" />
+            <span className="font-mono text-[10px] sm:text-xs font-bold uppercase text-[#2563EB]">Study</span>
+            <div className="w-6 h-6 sm:w-7 sm:h-7 bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg flex items-center justify-center text-[#2563EB]">
+              <BookOpen className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-3xl font-black font-mono tracking-tight text-black tabular-nums">
+          <div className="mt-1 flex items-baseline gap-1.5">
+            <span className="text-xl sm:text-3xl font-black font-mono tracking-tight text-black tabular-nums">
               {totalStudyHours}h
             </span>
-            <span className="text-xs text-[#2563EB] font-mono font-bold">({totalStudyMinutes}m)</span>
+            <span className="text-[10px] sm:text-xs text-[#2563EB] font-mono font-bold">({totalStudyMinutes}m)</span>
           </div>
-          <div className="text-xs text-[#4B5563] pt-2 flex items-center justify-between font-medium">
-            <span>{store.studyLogs.length} sessions logged</span>
+          <div className="hidden sm:flex text-xs text-[#4B5563] pt-2 items-center justify-between font-medium">
+            <span>{store.studyLogs.length} sessions</span>
             <span className="text-[#2563EB] font-bold uppercase font-mono text-[11px] bg-[#EFF6FF] px-1.5 py-0.5 border border-[#BFDBFE]">Active</span>
           </div>
         </div>
 
         {/* Card 2 - Tasks */}
-        <div className="p-4 space-y-1">
+        <div className="p-2.5 sm:p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs font-bold uppercase text-[#059669]">Task Completion</span>
-            <div className="w-7 h-7 bg-[#ECFDF5] border border-[#A7F3D0] flex items-center justify-center text-[#059669]">
-              <CheckSquare className="w-4 h-4" />
+            <span className="font-mono text-[10px] sm:text-xs font-bold uppercase text-[#059669]">Tasks</span>
+            <div className="w-6 h-6 sm:w-7 sm:h-7 bg-[#ECFDF5] border border-[#A7F3D0] rounded-lg flex items-center justify-center text-[#059669]">
+              <CheckSquare className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-3xl font-black font-mono tracking-tight text-black tabular-nums">
+          <div className="mt-1 flex items-baseline gap-1.5">
+            <span className="text-xl sm:text-3xl font-black font-mono tracking-tight text-black tabular-nums">
               {taskCompletionRate}%
             </span>
-            <span className="text-xs text-[#059669] font-mono font-bold">
+            <span className="text-[10px] sm:text-xs text-[#059669] font-mono font-bold">
               ({completedTasks.length}/{store.tasks.length})
             </span>
           </div>
-          <div className="text-xs text-[#4B5563] pt-2 flex items-center justify-between font-medium">
-            <span>{pendingTasks.length} pending items</span>
+          <div className="hidden sm:flex text-xs text-[#4B5563] pt-2 items-center justify-between font-medium">
+            <span>{pendingTasks.length} pending</span>
             <span className="text-[#059669] font-bold uppercase font-mono text-[11px] bg-[#ECFDF5] px-1.5 py-0.5 border border-[#A7F3D0]">Tasks</span>
           </div>
         </div>
 
         {/* Card 3 - Habits */}
-        <div className="p-4 space-y-1">
+        <div className="p-2.5 sm:p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs font-bold uppercase text-[#D97706]">Habit Cadence</span>
-            <div className="w-7 h-7 bg-[#FFFBEB] border border-[#FDE68A] flex items-center justify-center text-[#D97706]">
-              <Flame className="w-4 h-4" />
+            <span className="font-mono text-[10px] sm:text-xs font-bold uppercase text-[#D97706]">Streak</span>
+            <div className="w-6 h-6 sm:w-7 sm:h-7 bg-[#FFFBEB] border border-[#FDE68A] rounded-lg flex items-center justify-center text-[#D97706]">
+              <Flame className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-3xl font-black font-mono tracking-tight text-black tabular-nums">
-              {topStreak} Days
+          <div className="mt-1 flex items-baseline gap-1">
+            <span className="text-xl sm:text-3xl font-black font-mono tracking-tight text-black tabular-nums">
+              {topStreak}d
             </span>
-            <span className="text-xs text-[#D97706] font-bold uppercase">max streak</span>
+            <span className="text-[10px] sm:text-xs text-[#D97706] font-bold uppercase">streak</span>
           </div>
-          <div className="text-xs text-[#4B5563] pt-2 flex items-center justify-between font-medium">
+          <div className="hidden sm:flex text-xs text-[#4B5563] pt-2 items-center justify-between font-medium">
             <span>{store.habits.filter((h) => h.completedToday).length} done today</span>
             <span className="text-[#D97706] font-bold uppercase font-mono text-[11px] bg-[#FFFBEB] px-1.5 py-0.5 border border-[#FDE68A]">Streak</span>
           </div>
         </div>
 
         {/* Card 4 - Deadlines */}
-        <div className="p-4 space-y-1">
+        <div className="p-2.5 sm:p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs font-bold uppercase text-[#9333EA]">Upcoming Sync</span>
-            <div className="w-7 h-7 bg-[#FAF5FF] border border-[#E9D5FF] flex items-center justify-center text-[#9333EA]">
-              <CalendarClock className="w-4 h-4" />
+            <span className="font-mono text-[10px] sm:text-xs font-bold uppercase text-[#9333EA]">Events</span>
+            <div className="w-6 h-6 sm:w-7 sm:h-7 bg-[#FAF5FF] border border-[#E9D5FF] rounded-lg flex items-center justify-center text-[#9333EA]">
+              <CalendarClock className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-3xl font-black font-mono tracking-tight text-black tabular-nums">
+          <div className="mt-1 flex items-baseline gap-1">
+            <span className="text-xl sm:text-3xl font-black font-mono tracking-tight text-black tabular-nums">
               {upcomingDeadlinesCount}
             </span>
-            <span className="text-xs text-[#9333EA] font-bold uppercase">events</span>
+            <span className="text-[10px] sm:text-xs text-[#9333EA] font-bold uppercase">due</span>
           </div>
-          <div className="text-xs text-[#4B5563] pt-2 flex items-center justify-between font-medium">
+          <div className="hidden sm:flex text-xs text-[#4B5563] pt-2 items-center justify-between font-medium">
             <span className="truncate">Next: {store.deadlines[0]?.title.slice(0, 15) || "None"}...</span>
             <span className="text-[#9333EA] font-bold uppercase font-mono text-[11px] bg-[#FAF5FF] px-1.5 py-0.5 border border-[#E9D5FF]">Sync</span>
           </div>
