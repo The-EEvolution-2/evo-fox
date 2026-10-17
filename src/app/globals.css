@@ -87,3 +87,17 @@ pre,
   font-weight: 700;
   color: #1F2937;
 }
+
+/* Hide Netlify drawer / collaborative feedback badge */
+[data-netlify-deploy-id],
+#netlify-badge,
+.netlify-badge,
+iframe#netlify-identity-widget,
+div[class*="netlify-feedback"],
+div[class*="netlify-drawer"],
+button[class*="netlify-"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
