@@ -1,8 +1,24 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { AppStore, TaskItem, StudyLog, TargetGoal, SkillItem, MeetingDeadline, DailyHabit, LearningTerm, MoneyRecord, ToastMessage, UserProfile, CustomNote } from "@/types/app";
-import { seedData } from "@/lib/seedData";
+import { 
+  AppStore, 
+  TaskItem, 
+  StudyLog, 
+  TargetGoal, 
+  SkillItem, 
+  MeetingDeadline, 
+  DailyHabit, 
+  LearningTerm, 
+  MoneyRecord, 
+  ToastMessage, 
+  UserProfile, 
+  CustomNote 
+} from "@/types/app";
+import { initialStore } from "@/lib/seedData";
+import { db, isFirebaseConfigured } from "@/lib/firebase";
+import { doc, onSnapshot, setDoc } from "firebase/firestore";
+import { useAuth } from "./AuthContext";
 
 interface StoreContextType {
   store: AppStore;
@@ -12,6 +28,7 @@ interface StoreContextType {
   setSearchQuery: (q: string) => void;
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (collapsed: boolean | ((prev: boolean) => boolean)) => void;
+  isFirestoreSyncing: boolean;
   // Tasks
   addTask: (task: Omit<TaskItem, "id" | "createdAt">) => void;
   updateTask: (id: string, updates: Partial<TaskItem>) => void;
@@ -44,6 +61,7 @@ interface StoreContextType {
   importTermsJSON: (rawTerms: Array<{ term: string; topic: string; subtopic: string; notes?: string }>) => number;
   // Money Management
   addMoneyRecord: (record: Omit<MoneyRecord, "id">) => void;
+  updateMoneyRecord: (id: string, updates: Partial<MoneyRecord>) => void;
   deleteMoneyRecord: (id: string) => void;
   updateMonthlyAllowance: (amount: number) => void;
   // Profile
@@ -62,59 +80,161 @@ interface StoreContextType {
   removeToast: (id: string) => void;
 }
 
-const STORAGE_KEY = "edu_linear_editorial_vault_v2";
-const SIDEBAR_PREF_KEY = "edu_sidebar_state_v2";
+const STORAGE_PREFIX = "evofox_store_";
+const SIDEBAR_PREF_KEY = "evofox_sidebar_state_v1";
+const FIRESTORE_COLLECTION = "evofox_workspaces";
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [store, setStore] = useState<AppStore>(seedData);
+  const { user } = useAuth();
+  const [store, setStore] = useState<AppStore>(initialStore);
   const [activeView, setActiveView] = useState<string>("overview");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sidebarCollapsed, setSidebarCollapsedState] = useState<boolean>(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [isFirestoreSyncing, setIsFirestoreSyncing] = useState<boolean>(false);
 
-  // Load preferences from localStorage on mount
+  const userDocId = user ? user.uid : null;
+  const storageKey = user ? `${STORAGE_PREFIX}${user.uid}` : "evofox_store_guest";
+
+  // Sync with Firestore (realtime CRUD) + LocalStorage cache scoped to authenticated user
   useEffect(() => {
+    if (!userDocId) {
+      setStore(initialStore);
+      return;
+    }
+
+    // 1. Initial cached load from localStorage for fast first-render
     try {
-      const savedStore = localStorage.getItem(STORAGE_KEY);
+      const savedStore = localStorage.getItem(storageKey);
       if (savedStore) {
         const parsed = JSON.parse(savedStore);
-        if (!parsed.terms) {
-          parsed.terms = seedData.terms;
-        }
-        if (!parsed.targets) {
-          parsed.targets = seedData.targets;
-        }
-        if (!parsed.moneyRecords) {
-          parsed.moneyRecords = seedData.moneyRecords;
-        }
-        if (parsed.monthlyAllowance === undefined) {
-          parsed.monthlyAllowance = seedData.monthlyAllowance;
-        }
-        if (!parsed.userProfile) {
-          parsed.userProfile = seedData.userProfile;
-        }
-        if (!parsed.notes) {
-          parsed.notes = seedData.notes;
-        }
-        setStore(parsed);
+        setStore((prev) => ({
+          ...prev,
+          ...parsed,
+          tasks: parsed.tasks || [],
+          studyLogs: parsed.studyLogs || [],
+          targets: parsed.targets || [],
+          skills: parsed.skills || [],
+          deadlines: parsed.deadlines || [],
+          habits: parsed.habits || [],
+          terms: parsed.terms || [],
+          moneyRecords: parsed.moneyRecords || [],
+          monthlyAllowance: parsed.monthlyAllowance ?? 0,
+          notes: parsed.notes || [],
+          userProfile: {
+            ...prev.userProfile,
+            ...(parsed.userProfile || {}),
+            email: user?.email || parsed.userProfile?.email || prev.userProfile?.email || "",
+            name: user?.displayName || user?.email?.split("@")[0] || parsed.userProfile?.name || prev.userProfile?.name || "Scholar",
+            role: parsed.userProfile?.role || prev.userProfile?.role || "Learner",
+            institution: parsed.userProfile?.institution || prev.userProfile?.institution || "",
+            semesterOrYear: parsed.userProfile?.semesterOrYear || prev.userProfile?.semesterOrYear || "",
+            major: parsed.userProfile?.major || prev.userProfile?.major || "",
+            bio: parsed.userProfile?.bio || prev.userProfile?.bio || "",
+            primaryGoal: parsed.userProfile?.primaryGoal || prev.userProfile?.primaryGoal || "",
+          },
+        }));
       }
+
       const savedSidebar = localStorage.getItem(SIDEBAR_PREF_KEY);
       if (savedSidebar !== null) {
         setSidebarCollapsedState(savedSidebar === "true");
       }
     } catch (err) {
-      console.error("Local storage load failed:", err);
+      console.error("Local storage initial load failed:", err);
     }
-  }, []);
+
+    // 2. Real-time Firestore synchronization for this specific user's document
+    if (isFirebaseConfigured && db) {
+      setIsFirestoreSyncing(true);
+      const docRef = doc(db, FIRESTORE_COLLECTION, userDocId);
+
+      const unsubscribe = onSnapshot(
+        docRef,
+        (snapshot) => {
+          if (snapshot.exists()) {
+            const data = snapshot.data() as Partial<AppStore>;
+            const cleaned: AppStore = {
+              tasks: data.tasks || [],
+              studyLogs: data.studyLogs || [],
+              targets: data.targets || [],
+              skills: data.skills || [],
+              deadlines: data.deadlines || [],
+              habits: data.habits || [],
+              terms: data.terms || [],
+              moneyRecords: data.moneyRecords || [],
+              monthlyAllowance: data.monthlyAllowance ?? 0,
+              userProfile: {
+                name: user?.displayName || user?.email?.split("@")[0] || data.userProfile?.name || initialStore.userProfile?.name || "Scholar",
+                email: user?.email || data.userProfile?.email || initialStore.userProfile?.email || "",
+                role: data.userProfile?.role || initialStore.userProfile?.role || "Learner",
+                institution: data.userProfile?.institution || initialStore.userProfile?.institution || "",
+                semesterOrYear: data.userProfile?.semesterOrYear || initialStore.userProfile?.semesterOrYear || "",
+                major: data.userProfile?.major || initialStore.userProfile?.major || "",
+                bio: data.userProfile?.bio || initialStore.userProfile?.bio || "",
+                primaryGoal: data.userProfile?.primaryGoal || initialStore.userProfile?.primaryGoal || "",
+                ...(data.userProfile?.avatarUrl ? { avatarUrl: data.userProfile.avatarUrl } : {}),
+              },
+              notes: data.notes || [],
+            };
+            setStore(cleaned);
+            try {
+              localStorage.setItem(storageKey, JSON.stringify(cleaned));
+            } catch (e) {
+              console.error("Failed to cache remote store locally:", e);
+            }
+          } else {
+            // First time initialization in Firestore for this user
+            const newDoc: AppStore = {
+              ...initialStore,
+              userProfile: {
+                name: user?.displayName || user?.email?.split("@")[0] || initialStore.userProfile?.name || "Scholar",
+                email: user?.email || initialStore.userProfile?.email || "",
+                role: initialStore.userProfile?.role || "Learner",
+                institution: initialStore.userProfile?.institution || "",
+                semesterOrYear: initialStore.userProfile?.semesterOrYear || "",
+                major: initialStore.userProfile?.major || "",
+                bio: initialStore.userProfile?.bio || "",
+                primaryGoal: initialStore.userProfile?.primaryGoal || "",
+              },
+            };
+            setDoc(docRef, newDoc).catch((e) =>
+              console.error("Failed to seed user Firestore doc:", e)
+            );
+          }
+          setIsFirestoreSyncing(false);
+        },
+        (err) => {
+          console.warn("Firestore listener warning:", err);
+          setIsFirestoreSyncing(false);
+        }
+      );
+
+      return () => unsubscribe();
+    }
+  }, [userDocId, storageKey, user]);
 
   const saveStore = (newStore: AppStore) => {
+    // 1. Update React state immediately for instant UI response
     setStore(newStore);
+
+    // 2. Persist to localStorage
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newStore));
+      localStorage.setItem(storageKey, JSON.stringify(newStore));
     } catch (err) {
       console.error("Local storage persist failed:", err);
+    }
+
+    // 3. Persist to Firestore
+    if (isFirebaseConfigured && db && userDocId) {
+      const docRef = doc(db, FIRESTORE_COLLECTION, userDocId);
+      const sanitized = JSON.parse(JSON.stringify(newStore));
+      setDoc(docRef, sanitized, { merge: true }).catch((err) => {
+        console.error("Error writing to Firestore:", err);
+        addToast("Firestore sync failed", "error");
+      });
     }
   };
 
@@ -138,15 +258,15 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Task Mutations
+  // Task Mutations (CRUD)
   const addTask = (task: Omit<TaskItem, "id" | "createdAt">) => {
     const newTask: TaskItem = {
       ...task,
-      id: "TSK-" + (store.tasks.length + 101),
+      id: "TSK-" + Date.now().toString(36).toUpperCase(),
       createdAt: new Date().toISOString().split("T")[0],
     };
     saveStore({ ...store, tasks: [newTask, ...store.tasks] });
-    addToast(`Task "${newTask.title}" registered`, "success");
+    addToast(`Task "${newTask.title}" added`, "success");
   };
 
   const updateTask = (id: string, updates: Partial<TaskItem>) => {
@@ -160,11 +280,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     addToast(`Task removed`, "warning");
   };
 
-  // Study Log Mutations
+  // Study Log Mutations (CRUD)
   const addStudyLog = (log: Omit<StudyLog, "id">) => {
     const newLog: StudyLog = {
       ...log,
-      id: "LOG-" + (store.studyLogs.length + 1).toString().padStart(2, "0"),
+      id: "LOG-" + Date.now().toString(36).toUpperCase(),
     };
     saveStore({ ...store, studyLogs: [newLog, ...store.studyLogs] });
     addToast(`Study session logged: ${newLog.durationMinutes}m`, "success");
@@ -175,11 +295,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     addToast(`Study log deleted`, "warning");
   };
 
-  // Target Goal Mutations (Short-term & Long-term)
+  // Target Goal Mutations (CRUD)
   const addTarget = (target: Omit<TargetGoal, "id">) => {
     const newTarget: TargetGoal = {
       ...target,
-      id: "TGT-" + ((store.targets?.length || 0) + 1).toString().padStart(2, "0"),
+      id: "TGT-" + Date.now().toString(36).toUpperCase(),
     };
     saveStore({ ...store, targets: [...(store.targets || []), newTarget] });
     addToast(`${newTarget.horizon} target registered`, "success");
@@ -196,11 +316,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     addToast(`Target deleted`, "warning");
   };
 
-  // Skill Mutations
+  // Skill Mutations (CRUD)
   const addSkill = (skill: Omit<SkillItem, "id">) => {
     const newSkill: SkillItem = {
       ...skill,
-      id: "SKL-" + (store.skills.length + 1).toString().padStart(2, "0"),
+      id: "SKL-" + Date.now().toString(36).toUpperCase(),
     };
     saveStore({ ...store, skills: [...store.skills, newSkill] });
     addToast(`Skill "${newSkill.skillName}" created`, "success");
@@ -217,11 +337,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     addToast(`Skill deleted`, "warning");
   };
 
-  // Deadline Mutations
+  // Deadline Mutations (CRUD)
   const addDeadline = (d: Omit<MeetingDeadline, "id">) => {
     const newD: MeetingDeadline = {
       ...d,
-      id: "EVT-" + (store.deadlines.length + 1).toString().padStart(2, "0"),
+      id: "EVT-" + Date.now().toString(36).toUpperCase(),
     };
     saveStore({ ...store, deadlines: [...store.deadlines, newD] });
     addToast(`Event scheduled: ${newD.title}`, "success");
@@ -238,7 +358,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     addToast(`Event deleted`, "warning");
   };
 
-  // Habit Mutations
+  // Habit Mutations (CRUD)
   const toggleHabit = (id: string) => {
     const todayStr = new Date().toISOString().split("T")[0];
     const updated = store.habits.map((h) => {
@@ -261,7 +381,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const addHabit = (name: string, cadence: "Daily" | "Weekday") => {
     const newHabit: DailyHabit = {
-      id: "HBT-" + (store.habits.length + 1).toString().padStart(2, "0"),
+      id: "HBT-" + Date.now().toString(36).toUpperCase(),
       name,
       cadence,
       streakDays: 0,
@@ -277,7 +397,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     addToast(`Habit removed`, "warning");
   };
 
-  // Learning Terms
+  // Learning Terms (CRUD)
   const toggleTerm = (id: string) => {
     const updated = store.terms.map((t) => {
       if (t.id === id) {
@@ -296,7 +416,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const addTerm = (term: Omit<LearningTerm, "id" | "orderIndex">) => {
     const newTerm: LearningTerm = {
       ...term,
-      id: "TRM-" + (store.terms.length + 1).toString().padStart(2, "0"),
+      id: "TRM-" + Date.now().toString(36).toUpperCase(),
       orderIndex: store.terms.length + 1,
     };
     saveStore({ ...store, terms: [...store.terms, newTerm] });
@@ -340,11 +460,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return validTerms.length;
   };
 
-  // Money Management
+  // Money Management (CRUD)
   const addMoneyRecord = (record: Omit<MoneyRecord, "id">) => {
     const newRecord: MoneyRecord = {
       ...record,
-      id: "MNY-" + (store.moneyRecords.length + 1).toString().padStart(2, "0"),
+      id: "MNY-" + Date.now().toString(36).toUpperCase(),
     };
     saveStore({ ...store, moneyRecords: [newRecord, ...store.moneyRecords] });
     addToast(
@@ -360,27 +480,35 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     addToast(`Money record removed`, "warning");
   };
 
+  const updateMoneyRecord = (id: string, updates: Partial<MoneyRecord>) => {
+    const updated = store.moneyRecords.map((m) =>
+      m.id === id ? { ...m, ...updates } : m
+    );
+    saveStore({ ...store, moneyRecords: updated });
+    addToast(`Record updated`, "info");
+  };
+
   const updateMonthlyAllowance = (amount: number) => {
     saveStore({ ...store, monthlyAllowance: amount });
     addToast(`Monthly pocket money updated to ₹${amount}`, "success");
   };
 
-  // User Profile
+  // User Profile (CRUD)
   const updateUserProfile = (profile: Partial<UserProfile>) => {
     const updated = {
-      ...(store.userProfile || seedData.userProfile!),
+      ...(store.userProfile || initialStore.userProfile!),
       ...profile,
     };
     saveStore({ ...store, userProfile: updated });
     addToast("Profile details updated successfully", "success");
   };
 
-  // Notepad / Notes
+  // Notepad / Notes (CRUD)
   const addNote = (note: Omit<CustomNote, "id" | "createdAt" | "updatedAt">) => {
     const now = new Date().toISOString().split("T")[0];
     const newNote: CustomNote = {
       ...note,
-      id: "NOT-" + ((store.notes?.length || 0) + 1).toString().padStart(2, "0"),
+      id: "NOT-" + Date.now().toString(36).toUpperCase(),
       createdAt: now,
       updatedAt: now,
     };
@@ -410,7 +538,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(store, null, 2));
     const dlAnchor = document.createElement("a");
     dlAnchor.setAttribute("href", dataStr);
-    dlAnchor.setAttribute("download", `internal_edu_vault_${new Date().toISOString().split("T")[0]}.json`);
+    dlAnchor.setAttribute("download", `evofox_vault_${new Date().toISOString().split("T")[0]}.json`);
     document.body.appendChild(dlAnchor);
     dlAnchor.click();
     dlAnchor.remove();
@@ -420,17 +548,20 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const importJSON = (jsonStr: string): boolean => {
     try {
       const parsed = JSON.parse(jsonStr) as AppStore;
-      if (parsed.tasks && parsed.studyLogs && parsed.skills && parsed.deadlines) {
-        if (!parsed.terms) {
-          parsed.terms = seedData.terms;
-        }
-        if (!parsed.moneyRecords) {
-          parsed.moneyRecords = seedData.moneyRecords;
-        }
-        if (parsed.monthlyAllowance === undefined) {
-          parsed.monthlyAllowance = seedData.monthlyAllowance;
-        }
-        saveStore(parsed);
+      if (parsed) {
+        saveStore({
+          tasks: parsed.tasks || [],
+          studyLogs: parsed.studyLogs || [],
+          targets: parsed.targets || [],
+          skills: parsed.skills || [],
+          deadlines: parsed.deadlines || [],
+          habits: parsed.habits || [],
+          terms: parsed.terms || [],
+          moneyRecords: parsed.moneyRecords || [],
+          monthlyAllowance: parsed.monthlyAllowance ?? 0,
+          userProfile: parsed.userProfile || initialStore.userProfile,
+          notes: parsed.notes || [],
+        });
         addToast(`Vault data successfully restored`, "success");
         return true;
       }
@@ -443,8 +574,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const resetToDefaults = () => {
-    saveStore(seedData);
-    addToast(`Vault reset to canonical sample records`, "info");
+    saveStore(initialStore);
+    addToast(`Vault cleared to empty state`, "info");
   };
 
   return (
@@ -457,6 +588,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setSearchQuery,
         sidebarCollapsed,
         setSidebarCollapsed,
+        isFirestoreSyncing,
         addTask,
         updateTask,
         deleteTask,
@@ -481,6 +613,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         reorderTerms,
         importTermsJSON,
         addMoneyRecord,
+        updateMoneyRecord,
         deleteMoneyRecord,
         updateMonthlyAllowance,
         updateUserProfile,

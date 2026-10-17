@@ -20,6 +20,9 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({ isOpen, onClose })
   const [moneyType, setMoneyType] = useState<"Expense" | "Income">("Expense");
   const [moneyPaymentMode, setMoneyPaymentMode] = useState<"Online" | "Cash">("Online");
   const [moneyPurpose, setMoneyPurpose] = useState<any>("Food & Dining");
+  const [moneyIsLoan, setMoneyIsLoan] = useState(false);
+  const [moneyLender, setMoneyLender] = useState("");
+  const [moneyRepayDueDate, setMoneyRepayDueDate] = useState("");
 
   // Term form
   const [termName, setTermName] = useState("");
@@ -85,9 +88,16 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({ isOpen, onClose })
         paymentMode: moneyPaymentMode,
         purpose: moneyType === "Income" ? "Other" : moneyPurpose,
         date: new Date().toISOString().split("T")[0],
+        isLoan: moneyIsLoan,
+        lenderOrBorrower: moneyIsLoan ? (moneyLender.trim() || undefined) : undefined,
+        isRepaid: false,
+        repaymentDueDate: moneyIsLoan && moneyRepayDueDate ? moneyRepayDueDate : undefined,
       });
       setMoneyTitle("");
       setMoneyAmount("");
+      setMoneyIsLoan(false);
+      setMoneyLender("");
+      setMoneyRepayDueDate("");
     } else if (entryType === "term") {
       if (!termName.trim() || !termTopic.trim() || !termSubtopic.trim()) return;
       addTerm({
@@ -254,6 +264,50 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({ isOpen, onClose })
                 </select>
               </div>
             )}
+
+            {/* Loan / Borrow Toggle */}
+            <div className="p-2.5 bg-rose-50 border border-rose-200 rounded space-y-2">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={moneyIsLoan}
+                  onChange={(e) => setMoneyIsLoan(e.target.checked)}
+                  className="w-3.5 h-3.5 text-rose-600 rounded"
+                />
+                <span className="text-xs font-bold text-rose-900">
+                  Borrowed Loan (Need to repay)
+                </span>
+              </label>
+
+              {moneyIsLoan && (
+                <div className="grid grid-cols-2 gap-2 pt-1 border-t border-rose-200">
+                  <div>
+                    <label className="sub-label block mb-1 text-rose-900 font-semibold">
+                      Took loan from *
+                    </label>
+                    <input
+                      type="text"
+                      required={moneyIsLoan}
+                      value={moneyLender}
+                      onChange={(e) => setMoneyLender(e.target.value)}
+                      placeholder="e.g. Rahul, John"
+                      className="w-full h-7 px-2 border border-rose-300 rounded bg-white text-[#09090B] text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="sub-label block mb-1 text-rose-900 font-semibold">
+                      Due Date (Optional)
+                    </label>
+                    <input
+                      type="date"
+                      value={moneyRepayDueDate}
+                      onChange={(e) => setMoneyRepayDueDate(e.target.value)}
+                      className="w-full h-7 px-2 border border-rose-300 rounded bg-white text-[#09090B] text-xs font-mono"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
         {entryType === "term" && (

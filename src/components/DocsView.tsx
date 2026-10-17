@@ -352,16 +352,19 @@ export const DocsView: React.FC<{ onNavigate: (view: string) => void }> = ({ onN
               </span>
             </div>
             <h2 className="text-2xl font-bold text-black tracking-tight">
-              Money & Pocket Budgeting
+              Money, Pocket Budgeting & Loan Repayments
             </h2>
             <p>
-              Keep your finances in check with dedicated tracking of monthly pocket money allowances and categorized expenditures:
+              Keep your finances in check with dedicated tracking of monthly pocket money allowances, multi-mode cash/digital balances, and borrowed loans:
             </p>
 
             <ul className="list-disc pl-5 text-sm text-[#4B5563] space-y-1.5">
-              <li><strong>Target Baseline</strong>: Set your monthly pocket money allowance (editable via inline modal).</li>
+              <li><strong>Dual-Mode Balance</strong>: Track physical <em>Cash In Hand</em> and <em>Online / UPI / Bank</em> balances separately with automatic net surplus calculation.</li>
+              <li><strong>Loan & Borrow Repayment Flagging</strong>: Flag borrowed funds with the lender's identity (e.g. friend or colleague) and optional target repayment dates.</li>
+              <li><strong>Interactive Repayment Status</strong>: 1-click repayment status toggle directly from the transaction audit log with high-contrast status tags.</li>
+              <li><strong>Outstanding Repayment Filter</strong>: Instant "Filter Due" view to monitor pending debt without searching through routine receipts.</li>
               <li><strong>Categorized Purpose Breakdown</strong>: Automatically calculates percentages spent on <em>Food & Dining</em>, <em>Books & Courses</em>, <em>Tech & Software</em>, and <em>Transport</em>.</li>
-              <li><strong>Real-time Surplus Tracking</strong>: Highlights preserved balance in emerald green to encourage savings.</li>
+              <li><strong>Paper & PDF Audit Statement</strong>: Print-ready statement view via <code>window.print()</code> stripped of navigational chrome.</li>
             </ul>
           </section>
 

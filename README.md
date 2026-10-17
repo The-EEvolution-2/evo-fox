@@ -1,6 +1,6 @@
-# Edu Command - Personal Study & Financial Operating System
+# EvoFox - Personal Academic & Financial Operating System
 
-Edu Command is a single-user dashboard and productivity platform built for scholars, students, and engineers. It combines curriculum tracking, term mastery, financial ledger management (Cash in Hand + Online UPI balances), an interactive monthly schedule calendar, a focus Pomodoro timer, and a rich text study notepad into a unified offline-first web application.
+EvoFox is an offline-first productivity and academic command center designed for scholars, researchers, and engineers. It combines curriculum tracking, term roadmaps, financial ledger telemetry (Cash + Online accounts and loan repayment tracking), an interactive monthly schedule planner, a focus Pomodoro studio, and a rich study notepad into a synchronized web and PWA application.
 
 ---
 
@@ -12,51 +12,60 @@ Edu Command is a single-user dashboard and productivity platform built for schol
 - Status filters for pending and completed terms.
 - Bulk JSON import feature to ingest large concept lists at once.
 
-### 2. Money & Pocket Expense Tracker
-- Dual payment mode support: track Cash in Hand alongside Online / UPI / Bank balances.
-- Real-time aggregate net balance calculation with baseline monthly pocket money allowance targets.
+### 2. Money Management & Loan Repayments
+- Dual payment mode support: track physical **Cash in Hand** alongside **Online / UPI / Bank** balances.
+- **Borrowed Loan & Debt Tracking**: Flag loans with lender details (who the loan was taken from) and target repayment dates.
+- **Repayment Status Toggles**: 1-click repayment workflow directly in the ledger with visual badges (`LOAN / REPAY DUE` vs `REPAID`).
+- **Dedicated Loans Summary & Filter**: Live overview of total pending repayment with quick-filtering for outstanding debts.
 - Categorical outflow analysis (Food & Dining, Books & Courses, Tech & Software, Transport, Entertainment, Personal & Health).
 - Dedicated print layout: outputs an itemized financial statement and balance audit formatted specifically for paper and PDF export.
 
-### 3. Monthly Calendar & Agenda Planner
+### 3. Skill Competency Matrix
+- Visual 5-tier level stepper (Novice to Expert) to gauge technical competency.
+- Rapid practice hour logging (+1h and +4h blocks) with allocation progress bars.
+- Empty-state guidance with direct creation modal.
+
+### 4. Monthly Calendar & Agenda Planner
 - Full 7-day grid (Sunday through Saturday) with previous/next month navigation and a quick "Today" jump.
 - Plots exams, milestones, task deadlines, and logged study sessions directly onto calendar date cells.
 - Category filters to isolate deadlines, tasks, or study sessions.
 - Day Schedule Inspector side-panel to view all scheduled events for any selected date.
 
-### 4. Focus Pomodoro Studio
+### 5. Focus Pomodoro Studio
 - Deep work focus timer supporting 25-minute study intervals, 5-minute short breaks, and 15-minute long rests.
 - Fullscreen mode with a distraction-free dark theme.
 - Configurable session durations and web audio completion chime.
 - Daily completed session counter.
 
-### 5. Rich Notepad & Interactive Checklists
+### 6. Rich Notepad & Interactive Checklists
 - Formatted study documentation with Bold, Italic, Underline, colored text highlights, and list structures.
 - Interactive checklist mode with progress tracking and strike-through completion.
 - Card color tagging across multiple soft pastel palettes.
 - Pin-to-top feature for critical notes.
 - Dedicated Save button with local storage persistence.
 
-### 6. Study Curriculum & Task Operations
+### 7. Study Curriculum & Task Operations
 - Subject, subtopic, and specific proof/theorem logging.
 - Priority task queue with backlog and completion statuses.
 - Short-term and long-term goal milestone trackers.
 
-### 7. Scholar Profile & Identity
+### 8. Scholar Profile, Cloud Sync & Security
 - Scholar profile displaying name, institution, major, academic year, and north-star objectives.
-- Summary metrics tracking terms learned, total study hours, completed tasks, and monthly budget.
-- Editable profile with offline local vault storage.
+- Multi-user authentication supporting email/password sign-in and guest mode.
+- Real-time cloud synchronization powered by Google Firebase Firestore alongside local cache for instant offline access.
+- JSON data export/import for complete manual data backup and restore.
 
 ---
 
 ## Technical Stack & Architecture
 
-- Framework: Next.js 16 (App Router, Turbopack)
-- Language: TypeScript (strict type safety)
-- Styling: Tailwind CSS with customized design tokens, subtle rounded corners, and a low-opacity background grid texture
-- State Management: React Context (`StoreContext`) backed by HTML5 LocalStorage for 100% offline persistence
-- Icons: Lucide React
-- Print Support: Dedicated CSS `@media print` rules generating custom ledger audits without application chrome
+- **Framework**: Next.js 16 (App Router, Turbopack)
+- **Language**: TypeScript (strict type safety)
+- **Styling**: Tailwind CSS with customized design tokens, clean typography, and responsive mobile-first layouts
+- **Database & Auth**: Firebase Authentication & Cloud Firestore (scoped to user workspace)
+- **Offline / Local State**: React Context (`StoreContext`) backed by HTML5 LocalStorage + Service Worker PWA
+- **Icons**: Lucide React
+- **Print Support**: Dedicated CSS `@media print` rules generating custom ledger audits without application chrome
 
 ---
 

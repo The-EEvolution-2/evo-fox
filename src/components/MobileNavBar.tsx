@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useStore } from "@/context/StoreContext";
+import { useAuth } from "@/context/AuthContext";
 import { 
   LayoutDashboard, 
   BookMarked, 
@@ -16,7 +17,8 @@ import {
   BookOpen,
   HelpCircle,
   X,
-  Timer
+  Timer,
+  LogOut
 } from "lucide-react";
 
 interface MobileAppChromeProps {
@@ -26,6 +28,7 @@ interface MobileAppChromeProps {
 
 export function MobileNavBar({ onQuickAdd, onOpenPomodoro }: MobileAppChromeProps) {
   const { activeView, setActiveView, store } = useStore();
+  const { user, logout } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Primary 4 tabs for standard mobile app tab bar
@@ -59,7 +62,7 @@ export function MobileNavBar({ onQuickAdd, onOpenPomodoro }: MobileAppChromeProp
           />
           <div>
             <div className="font-extrabold text-sm tracking-tight text-slate-900 leading-tight">
-              AuraEdu
+              EVOFOX
             </div>
             <div className="text-[10px] text-blue-600 font-semibold uppercase tracking-wider">
               {activeView}
@@ -179,6 +182,22 @@ export function MobileNavBar({ onQuickAdd, onOpenPomodoro }: MobileAppChromeProp
                 );
               })}
             </div>
+
+            {/* Mobile Sign Out */}
+            {user && (
+              <div className="pt-4 border-t border-slate-200 mt-4">
+                <button
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    logout();
+                  }}
+                  className="w-full py-2.5 px-3 rounded-xl bg-red-50 text-red-600 border border-red-200 flex items-center justify-center gap-2 text-xs font-semibold"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Sign Out ({user.email})</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

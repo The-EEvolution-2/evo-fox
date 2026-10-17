@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { StoreProvider, useStore } from "@/context/StoreContext";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { AuthView } from "@/components/AuthView";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { OverviewView } from "@/components/OverviewView";
@@ -22,6 +24,7 @@ import { QuickAddModal } from "@/components/QuickAddModal";
 import { VaultModal } from "@/components/VaultModal";
 import { PomodoroModal } from "@/components/PomodoroModal";
 import { ToastContainer } from "@/components/ToastContainer";
+import { PWAInstaller } from "@/components/PWAInstaller";
 
 function AppShell() {
   const { activeView, setActiveView } = useStore();
@@ -70,17 +73,41 @@ function AppShell() {
       <QuickAddModal isOpen={quickAddOpen} onClose={() => setQuickAddOpen(false)} />
       <VaultModal isOpen={vaultOpen} onClose={() => setVaultOpen(false)} />
       <PomodoroModal isOpen={pomodoroOpen} onClose={() => setPomodoroOpen(false)} />
+      <PWAInstaller />
       <ToastContainer />
     </div>
+  );
+}
+
+function AuthenticatedApp() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center font-mono text-xs text-[#71717A] space-y-2">
+        <div className="w-6 h-6 border-2 border-slate-300 border-t-slate-800 rounded-full animate-spin" />
+        <span>AUTHENTICATING SECURE SESSION...</span>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthView />;
+  }
+
+  return (
+    <StoreProvider>
+      <AppShell />
+    </StoreProvider>
   );
 }
 
 export default function Home() {
   return (
     <React.Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center font-mono text-xs text-[#71717A]">SYS.INITIALIZING...</div>}>
-      <StoreProvider>
-        <AppShell />
-      </StoreProvider>
+      <AuthProvider>
+        <AuthenticatedApp />
+      </AuthProvider>
     </React.Suspense>
   );
 }

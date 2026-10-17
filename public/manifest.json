@@ -1,0 +1,25 @@
+{
+  "name": "EVOFOX - Academic OS & Productivity Suite",
+  "short_name": "EVOFOX",
+  "description": "Personal study curriculum, term mastery, multi-mode financial ledger, and focus workflow suite.",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#18181b",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

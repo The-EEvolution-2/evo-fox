@@ -38,10 +38,9 @@ export const VaultModal: React.FC<VaultModalProps> = ({ isOpen, onClose }) => {
       <Modal isOpen={isOpen} onClose={onClose} title="Local Vault Storage & JSON Management">
         <div className="space-y-5 text-xs">
           <div className="bg-[#FAFAFA] border border-[#E4E4E7] p-3 space-y-1">
-            <span className="sub-label">Zero-Cloud Local Privacy</span>
+            <span className="sub-label">Cloud Firestore + Local Offline Sync</span>
             <p className="text-[#71717A] leading-relaxed">
-              All records (tasks, study sessions, skills, deadlines, habits) reside entirely in
-              your browser's persistent LocalStorage. No accounts, cookies, or remote telemetries.
+              All records (tasks, study sessions, skills, deadlines, habits, terms) are synchronized in real-time across your devices with Firebase Firestore, and cached locally for instant access.
             </p>
           </div>
 
@@ -105,7 +104,7 @@ export const VaultModal: React.FC<VaultModalProps> = ({ isOpen, onClose }) => {
               className="w-full h-8 border border-[#E4E4E7] text-[#71717A] hover:text-[#09090B] hover:bg-[#FAFAFA] text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset Vault to Canonical Seed Records</span>
+              <span>Clear All Data to Clean State</span>
             </button>
           </div>
         </div>
@@ -113,9 +112,9 @@ export const VaultModal: React.FC<VaultModalProps> = ({ isOpen, onClose }) => {
 
       <ConfirmDialog
         isOpen={showResetConfirm}
-        title="Reset Local Vault"
-        description="Are you sure you want to overwrite current local storage with canonical sample records? Any custom entries will be replaced."
-        confirmLabel="Confirm Reset"
+        title="Clear Vault Data"
+        description="Are you sure you want to clear all records across Firestore and local storage? This action cannot be undone."
+        confirmLabel="Confirm Clear"
         onConfirm={() => {
           resetToDefaults();
           setShowResetConfirm(false);

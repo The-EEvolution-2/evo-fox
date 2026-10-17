@@ -2,7 +2,8 @@
 
 import React, { useEffect, useRef } from "react";
 import { useStore } from "@/context/StoreContext";
-import { Search, Plus, Calendar, Timer } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { Search, Plus, Calendar, Timer, LogOut } from "lucide-react";
 
 interface TopBarProps {
   onQuickAdd: () => void;
@@ -11,6 +12,7 @@ interface TopBarProps {
 
 export const TopBar: React.FC<TopBarProps> = ({ onQuickAdd, onOpenPomodoro }) => {
   const { activeView, searchQuery, setSearchQuery } = useStore();
+  const { user, logout } = useAuth();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const getPageTitle = (view: string) => {
@@ -131,6 +133,18 @@ export const TopBar: React.FC<TopBarProps> = ({ onQuickAdd, onOpenPomodoro }) =>
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">New Entry</span>
         </button>
+
+        {/* User Sign Out Button */}
+        {user && (
+          <button
+            onClick={() => logout()}
+            className="h-9 px-2.5 border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs"
+            title={`Signed in as ${user.email}. Click to log out.`}
+          >
+            <LogOut className="w-3.5 h-3.5 text-slate-500" />
+            <span className="hidden md:inline">Sign Out</span>
+          </button>
+        )}
       </div>
     </header>
   );

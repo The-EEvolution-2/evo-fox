@@ -163,17 +163,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenVaultModal }) => {
       }`}
     >
       {/* Top Header */}
-      <div>
-        <div className="h-16 border-b border-[#D1D5DB] px-4 flex items-center justify-between">
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="h-16 border-b border-[#D1D5DB] px-4 flex items-center justify-between shrink-0">
           {!sidebarCollapsed && (
             <div className="flex items-center gap-2.5 overflow-hidden">
               <img
                 src="/logo.png"
-                alt="AuraEdu Logo"
+                alt="EVOFOX Logo"
                 className="w-8 h-8 rounded-lg object-cover shadow-xs border border-blue-200"
               />
               <span className="font-bold text-sm tracking-tight text-slate-900">
-                AuraEdu
+                EVOFOX
               </span>
             </div>
           )}
@@ -181,7 +181,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenVaultModal }) => {
           {sidebarCollapsed && (
             <img
               src="/logo.png"
-              alt="Edu Command Logo"
+              alt="EVOFOX Logo"
               className="w-8 h-8 mx-auto rounded-lg object-cover shadow-xs border border-blue-200"
             />
           )}
@@ -198,8 +198,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenVaultModal }) => {
           </button>
         </div>
 
-        {/* Navigation List */}
-        <nav className="p-2 space-y-1">
+        {/* Navigation List - Scrollable when window is small */}
+        <nav className="p-2 space-y-1 overflow-y-auto flex-1 min-h-0 [scrollbar-width:thin]">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeView === item.id;
@@ -208,7 +208,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenVaultModal }) => {
               <button
                 key={item.id}
                 onClick={() => setActiveView(item.id)}
-                className={`w-full flex items-center text-left transition-all duration-150 h-10 px-3 rounded-lg ${
+                className={`w-full flex items-center text-left transition-all duration-150 h-10 px-3 rounded-lg shrink-0 ${
                   isActive
                     ? `${item.activeBg} font-bold shadow-xs`
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-medium"
@@ -257,7 +257,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenVaultModal }) => {
             {!sidebarCollapsed && <span className="font-semibold text-xs">Vault & JSON Backup</span>}
           </div>
           {!sidebarCollapsed && (
-            <span className="text-[11px] uppercase font-bold text-slate-700 border border-slate-200 px-1.5 py-0.5 rounded-sm bg-white">Local</span>
+            <span className="text-[11px] uppercase font-bold text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded-sm bg-emerald-50">Cloud</span>
           )}
         </button>
       </div>

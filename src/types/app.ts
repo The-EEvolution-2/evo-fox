@@ -80,6 +80,10 @@ export interface MoneyRecord {
   purpose: "Food & Dining" | "Books & Courses" | "Tech & Software" | "Transport" | "Entertainment" | "Personal & Health" | "Other";
   date: string; // YYYY-MM-DD
   notes?: string;
+  isLoan?: boolean; // Flag if this is borrowed money that needs repayment
+  lenderOrBorrower?: string; // Person/source from whom money was taken or lent to
+  isRepaid?: boolean; // Repayment status (settled vs pending)
+  repaymentDueDate?: string; // Optional target date for repayment
 }
 
 export interface UserProfile {

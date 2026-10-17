@@ -3,12 +3,43 @@
 import React, { useState } from "react";
 import { useStore } from "@/context/StoreContext";
 import { SkillItem } from "@/types/app";
-import { Sparkles, Plus, Trash2, ArrowUpDown } from "lucide-react";
-import { ConfirmDialog } from "@/components/Modal";
+import { Sparkles, Plus, Trash2, ArrowUpDown, BookOpen } from "lucide-react";
+import { ConfirmDialog, Modal } from "@/components/Modal";
 
-export const SkillsView: React.FC = () => {
-  const { store, updateSkill, deleteSkill, searchQuery } = useStore();
+interface SkillsViewProps {
+  onOpenQuickAdd?: () => void;
+}
+
+export const SkillsView: React.FC<SkillsViewProps> = ({ onOpenQuickAdd }) => {
+  const { store, addSkill, updateSkill, deleteSkill, searchQuery } = useStore();
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  // New Skill form state
+  const [skillName, setSkillName] = useState("");
+  const [skillDomain, setSkillDomain] = useState("Engineering");
+  const [proficiencyLevel, setProficiencyLevel] = useState(1);
+  const [targetHours, setTargetHours] = useState(50);
+
+  const handleCreateSkill = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!skillName.trim()) return;
+
+    addSkill({
+      skillName: skillName.trim(),
+      domain: skillDomain.trim() || "General",
+      proficiencyLevel,
+      targetHours: Number(targetHours) || 50,
+      completedHours: 0,
+      lastPracticed: new Date().toISOString().split("T")[0],
+    });
+
+    setSkillName("");
+    setSkillDomain("Engineering");
+    setProficiencyLevel(1);
+    setTargetHours(50);
+    setIsAddModalOpen(false);
+  };
 
   const filteredSkills = store.skills.filter((s) => {
     if (searchQuery.trim()) {
@@ -20,8 +51,56 @@ export const SkillsView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Skill Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* View Header with stats and action button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-[#D1D5DB] p-4">
+        <div>
+          <h2 className="text-base font-bold text-black flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-[#E11D48]" />
+            Skill Competency Matrix
+          </h2>
+          <p className="text-xs text-[#4B5563] mt-0.5">
+            5-tier technical proficiency steppers with dedicated practice hour logs
+          </p>
+        </div>
+
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className="btn-primary h-8 px-3.5 text-xs flex items-center justify-center gap-1.5 shrink-0"
+        >
+          <Plus className="w-4 h-4" />
+          <span>New Skill Competency</span>
+        </button>
+      </div>
+
+      {/* Empty State when no skills exist or match search */}
+      {filteredSkills.length === 0 ? (
+        <div className="bg-white border border-[#D1D5DB] p-12 text-center space-y-4">
+          <div className="w-12 h-12 mx-auto bg-[#FFF1F2] border border-[#FECDD3] rounded-full flex items-center justify-center text-[#E11D48]">
+            <Sparkles className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-sm font-bold text-black">
+              {searchQuery ? "No matching skills found" : "No Skill Competencies Registered"}
+            </h3>
+            <p className="text-xs text-[#6B7280] max-w-sm mx-auto">
+              {searchQuery
+                ? `No skills matched your search query "${searchQuery}". Clear search or add a new skill.`
+                : "Your competency matrix is currently empty (badge shows 0). Add technical or study skills to track hours and proficiency levels."}
+            </p>
+          </div>
+          <div className="pt-2">
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="btn-primary h-9 px-4 text-xs font-semibold inline-flex items-center gap-1.5"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Your First Skill</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        /* Skill Cards Grid */
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredSkills.map((skill) => {
           const progressPct = Math.round((skill.completedHours / skill.targetHours) * 100);
 
@@ -125,6 +204,85 @@ export const SkillsView: React.FC = () => {
           );
         })}
       </div>
+      )}
+
+      {/* Add Skill Modal */}
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        title="Add Skill Competency"
+      >
+        <form onSubmit={handleCreateSkill} className="space-y-4">
+          <div>
+            <label className="sub-label block mb-1">Skill Name</label>
+            <input
+              type="text"
+              required
+              value={skillName}
+              onChange={(e) => setSkillName(e.target.value)}
+              placeholder="e.g. Distributed Consensus (Raft / Paxos)"
+              className="w-full h-9 px-3 border border-[#D1D5DB] bg-white text-black font-semibold text-sm focus:border-black outline-none"
+              autoFocus
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="sub-label block mb-1">Domain / Field</label>
+              <input
+                type="text"
+                required
+                value={skillDomain}
+                onChange={(e) => setSkillDomain(e.target.value)}
+                placeholder="e.g. Engineering, Algorithms"
+                className="w-full h-8 px-2.5 border border-[#D1D5DB] bg-white text-black text-xs font-semibold focus:border-black outline-none"
+              />
+            </div>
+            <div>
+              <label className="sub-label block mb-1">Initial Level (1-5)</label>
+              <select
+                value={proficiencyLevel}
+                onChange={(e) => setProficiencyLevel(Number(e.target.value))}
+                className="w-full h-8 px-2 border border-[#D1D5DB] bg-white text-black text-xs font-bold font-mono focus:border-black outline-none"
+              >
+                <option value={1}>Tier 1 - Novice</option>
+                <option value={2}>Tier 2 - Advanced Beginner</option>
+                <option value={3}>Tier 3 - Competent</option>
+                <option value={4}>Tier 4 - Proficient</option>
+                <option value={5}>Tier 5 - Expert</option>
+              </select>
+            </div>
+            <div>
+              <label className="sub-label block mb-1">Target Hours</label>
+              <input
+                type="number"
+                min={5}
+                step={5}
+                required
+                value={targetHours}
+                onChange={(e) => setTargetHours(Number(e.target.value))}
+                className="w-full h-8 px-2.5 border border-[#D1D5DB] bg-white text-black font-mono font-bold text-xs focus:border-black outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#E5E7EB]">
+            <button
+              type="button"
+              onClick={() => setIsAddModalOpen(false)}
+              className="h-8 px-3.5 border border-[#D1D5DB] text-xs font-semibold text-[#374151] hover:bg-[#F3F4F6]"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn-primary h-8 px-4 text-xs font-bold"
+            >
+              Create Skill
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       <ConfirmDialog
         isOpen={Boolean(deleteTargetId)}

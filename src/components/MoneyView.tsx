@@ -18,7 +18,11 @@ import {
   TrendingUp,
   Printer,
   Banknote,
-  Smartphone
+  Smartphone,
+  HandCoins,
+  CheckCircle2,
+  Clock,
+  AlertCircle
 } from "lucide-react";
 import { Modal, ConfirmDialog } from "@/components/Modal";
 
@@ -26,6 +30,7 @@ export const MoneyView: React.FC = () => {
   const { 
     store, 
     addMoneyRecord, 
+    updateMoneyRecord,
     deleteMoneyRecord, 
     updateMonthlyAllowance, 
     searchQuery 
@@ -34,6 +39,7 @@ export const MoneyView: React.FC = () => {
   const [filterType, setFilterType] = useState<string>("All");
   const [filterMode, setFilterMode] = useState<string>("All");
   const [filterPurpose, setFilterPurpose] = useState<string>("All");
+  const [filterLoan, setFilterLoan] = useState<string>("All"); // All | LoansOnly | PendingLoans | SettledLoans
   const [paymentMode, setPaymentMode] = useState<"Online" | "Cash">("Online");
 
   // Inline allowance edit
@@ -51,6 +57,10 @@ export const MoneyView: React.FC = () => {
   const [purpose, setPurpose] = useState<MoneyRecord["purpose"]>("Food & Dining");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [notes, setNotes] = useState("");
+  // Loan/Borrow Fields
+  const [isLoan, setIsLoan] = useState(false);
+  const [lenderOrBorrower, setLenderOrBorrower] = useState("");
+  const [repaymentDueDate, setRepaymentDueDate] = useState("");
 
   const handleSaveAllowance = () => {
     const val = parseFloat(allowanceInput);
@@ -72,11 +82,18 @@ export const MoneyView: React.FC = () => {
       purpose: type === "Income" ? "Other" : purpose,
       date,
       notes: notes.trim() || undefined,
+      isLoan,
+      lenderOrBorrower: isLoan ? (lenderOrBorrower.trim() || undefined) : undefined,
+      isRepaid: false,
+      repaymentDueDate: isLoan && repaymentDueDate ? repaymentDueDate : undefined,
     });
 
     setTitle("");
     setAmount("");
     setNotes("");
+    setIsLoan(false);
+    setLenderOrBorrower("");
+    setRepaymentDueDate("");
     setIsAddModalOpen(false);
   };
 
@@ -115,6 +132,12 @@ export const MoneyView: React.FC = () => {
     ? Math.min(100, Math.round((totalExpense / store.monthlyAllowance) * 100))
     : 0;
 
+  // Loan & Repayment Metrics
+  const loanRecords = records.filter((r) => r.isLoan);
+  const pendingLoans = loanRecords.filter((r) => !r.isRepaid);
+  const settledLoans = loanRecords.filter((r) => r.isRepaid);
+  const totalPendingRepayment = pendingLoans.reduce((sum, r) => sum + r.amount, 0);
+
   // Purpose breakdown
   const purposeBreakdown = useMemo(() => {
     const map: Record<string, number> = {};
@@ -135,11 +158,15 @@ export const MoneyView: React.FC = () => {
         if (itemMode !== filterMode) return false;
       }
       if (filterPurpose !== "All" && r.purpose !== filterPurpose) return false;
+      if (filterLoan === "LoansOnly" && !r.isLoan) return false;
+      if (filterLoan === "PendingLoans" && (!r.isLoan || r.isRepaid)) return false;
+      if (filterLoan === "SettledLoans" && (!r.isLoan || !r.isRepaid)) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         return (
           r.title.toLowerCase().includes(q) ||
           r.purpose.toLowerCase().includes(q) ||
+          (r.lenderOrBorrower && r.lenderOrBorrower.toLowerCase().includes(q)) ||
           (r.notes && r.notes.toLowerCase().includes(q))
         );
       }
@@ -353,23 +380,28 @@ export const MoneyView: React.FC = () => {
           </div>
         </div>
 
-        {/* Card 4: Total Month Inflow vs Outflow */}
-        <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="sub-label">Month Total Outflow</span>
-            <TrendingDown className="w-4 h-4 text-rose-600" />
+        {/* Card 4: Loans & Repayments Due */}
+        <div className="bg-white border border-rose-200 rounded-xl p-4 shadow-xs">
+          <div className="flex items-center justify-between text-rose-700">
+            <span className="sub-label text-rose-800">Loans to Repay</span>
+            <HandCoins className="w-4 h-4 text-rose-600" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono tracking-tight text-slate-900 tabular-nums">
-              ₹{totalExpense}
+            <span className="text-2xl font-bold font-mono tracking-tight text-rose-700 tabular-nums">
+              ₹{totalPendingRepayment}
             </span>
-            <span className="text-xs text-slate-500 font-mono">
-              ({budgetUtilizationPct}% of base)
+            <span className="text-xs text-rose-600 font-mono">
+              ({pendingLoans.length} pending)
             </span>
           </div>
           <div className="mt-2 text-xs text-slate-500 flex items-center justify-between border-t border-slate-100 pt-2">
-            <span className="text-emerald-700 font-mono">+₹{totalIncome} ins</span>
-            <span className="text-rose-600 font-medium font-mono">-₹{totalExpense} outs</span>
+            <span>Borrowed / Due to Repay</span>
+            <button
+              onClick={() => setFilterLoan(filterLoan === "PendingLoans" ? "All" : "PendingLoans")}
+              className="text-rose-700 hover:underline font-semibold font-mono"
+            >
+              {filterLoan === "PendingLoans" ? "Show All" : "Filter Due"}
+            </button>
           </div>
         </div>
       </div>
@@ -450,6 +482,20 @@ export const MoneyView: React.FC = () => {
               </select>
             </div>
 
+            <div className="flex items-center gap-1.5">
+              <span className="text-[#71717A] text-[11px] sm:text-xs">Loans:</span>
+              <select
+                value={filterLoan}
+                onChange={(e) => setFilterLoan(e.target.value)}
+                className="h-7 border border-[#E4E4E7] rounded-md px-1.5 sm:px-2 bg-white text-[#09090B] text-xs font-medium"
+              >
+                <option value="All">All Transactions</option>
+                <option value="LoansOnly">All Loans / Borrowed</option>
+                <option value="PendingLoans">Pending Repayment</option>
+                <option value="SettledLoans">Settled / Repaid</option>
+              </select>
+            </div>
+
             <div className="hidden md:flex items-center gap-1.5">
               <span className="text-[#71717A]">Purpose:</span>
               <select
@@ -479,11 +525,11 @@ export const MoneyView: React.FC = () => {
                 <th className="hidden sm:table-cell p-3 w-16 uppercase tracking-wider text-[11px]">ID</th>
                 <th className="p-2.5 sm:p-3 w-16 sm:w-20 uppercase tracking-wider text-[10px] sm:text-[11px]">Type</th>
                 <th className="p-2.5 sm:p-3 w-16 sm:w-24 uppercase tracking-wider text-[10px] sm:text-[11px]">Mode</th>
-                <th className="p-2.5 sm:p-3 uppercase tracking-wider text-[10px] sm:text-[11px]">Description</th>
+                <th className="p-2.5 sm:p-3 uppercase tracking-wider text-[10px] sm:text-[11px]">Description & Lender</th>
                 <th className="hidden md:table-cell p-3 w-36 uppercase tracking-wider text-[11px]">Purpose</th>
-                <th className="p-2.5 sm:p-3 w-20 sm:w-28 uppercase tracking-wider text-[10px] sm:text-[11px]">Date</th>
+                <th className="p-2.5 sm:p-3 w-20 sm:w-28 uppercase tracking-wider text-[10px] sm:text-[11px]">Date / Due</th>
                 <th className="p-2.5 sm:p-3 w-20 sm:w-28 text-right uppercase tracking-wider text-[10px] sm:text-[11px]">Amount</th>
-                <th className="p-2.5 sm:p-3 w-10 sm:w-14 text-right uppercase tracking-wider text-[10px] sm:text-[11px]">Act</th>
+                <th className="p-2.5 sm:p-3 w-16 sm:w-20 text-center uppercase tracking-wider text-[10px] sm:text-[11px]">Status / Act</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E4E4E7]">
@@ -530,7 +576,31 @@ export const MoneyView: React.FC = () => {
                       </span>
                     </td>
                     <td className="p-3">
-                      <div className="font-medium text-[#09090B]">{item.title}</div>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="font-medium text-[#09090B]">{item.title}</span>
+                        {item.isLoan && (
+                          <span
+                            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border ${
+                              item.isRepaid
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+                                : "bg-rose-50 text-rose-700 border-rose-300 animate-pulse"
+                            }`}
+                          >
+                            <HandCoins className="w-3 h-3" />
+                            {item.isRepaid ? "REPAID" : "LOAN / REPAY DUE"}
+                          </span>
+                        )}
+                      </div>
+
+                      {item.isLoan && item.lenderOrBorrower && (
+                        <div className="text-[11px] font-semibold text-rose-800 flex items-center gap-1 mt-0.5">
+                          <span>From:</span>
+                          <span className="bg-rose-100/60 px-1 py-0.2 rounded text-rose-900 font-bold">
+                            {item.lenderOrBorrower}
+                          </span>
+                        </div>
+                      )}
+
                       {item.notes && (
                         <div className="text-[11px] text-[#71717A] mt-0.5">{item.notes}</div>
                       )}
@@ -538,7 +608,15 @@ export const MoneyView: React.FC = () => {
                     <td className="p-3 font-mono text-[11px] text-[#71717A]">
                       {item.purpose}
                     </td>
-                    <td className="p-3 font-mono text-[11px] text-[#71717A]">{item.date}</td>
+                    <td className="p-3 font-mono text-[11px] text-[#71717A]">
+                      <div>{item.date}</div>
+                      {item.isLoan && item.repaymentDueDate && (
+                        <div className="text-[10px] text-amber-700 font-semibold flex items-center gap-0.5 mt-0.5">
+                          <Clock className="w-2.5 h-2.5" />
+                          <span>Due: {item.repaymentDueDate}</span>
+                        </div>
+                      )}
+                    </td>
                     <td
                       className={`p-3 text-right font-mono font-bold tabular-nums text-xs ${
                         item.type === "Income" ? "text-emerald-700" : "text-slate-800"
@@ -546,14 +624,39 @@ export const MoneyView: React.FC = () => {
                     >
                       {item.type === "Income" ? `+₹${item.amount}` : `-₹${item.amount}`}
                     </td>
-                    <td className="p-3 text-right">
-                      <button
-                        onClick={() => setDeleteTargetId(item.id)}
-                        className="p-1 text-[#71717A] hover:text-[#18181B] border border-transparent hover:border-[#E4E4E7] rounded"
-                        title="Delete record"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                    <td className="p-3 text-center">
+                      <div className="flex items-center justify-center gap-1.5">
+                        {item.isLoan && (
+                          <button
+                            onClick={() =>
+                              updateMoneyRecord(item.id, { isRepaid: !item.isRepaid })
+                            }
+                            className={`p-1 rounded border text-[11px] font-mono font-bold transition-colors ${
+                              item.isRepaid
+                                ? "border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
+                                : "border-rose-300 text-rose-700 bg-rose-50 hover:bg-rose-100"
+                            }`}
+                            title={
+                              item.isRepaid
+                                ? "Mark as pending repayment"
+                                : `Mark loan from ${item.lenderOrBorrower || "lender"} as fully repaid`
+                            }
+                          >
+                            {item.isRepaid ? (
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                            ) : (
+                              <span className="text-[10px] px-1 font-semibold">Repay</span>
+                            )}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setDeleteTargetId(item.id)}
+                          className="p-1 text-[#71717A] hover:text-[#18181B] border border-transparent hover:border-[#E4E4E7] rounded"
+                          title="Delete record"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -616,9 +719,54 @@ export const MoneyView: React.FC = () => {
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Course subscription, Dining, Metro pass"
+              placeholder="e.g. Borrowed money, Dining, Metro pass, Textbook"
               className="w-full h-8 px-2.5 border border-[#E4E4E7] bg-white text-[#09090B]"
             />
+          </div>
+
+          {/* Loan / Borrow Flag Box */}
+          <div className="p-3 bg-rose-50/70 border border-rose-200 rounded-lg space-y-2.5">
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={isLoan}
+                onChange={(e) => setIsLoan(e.target.checked)}
+                className="w-4 h-4 rounded text-rose-600 focus:ring-rose-500"
+              />
+              <span className="text-xs font-bold text-rose-900 flex items-center gap-1.5">
+                <HandCoins className="w-3.5 h-3.5 text-rose-600" />
+                This is a Loan / Borrowed Money (Needs Repayment)
+              </span>
+            </label>
+
+            {isLoan && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-rose-200">
+                <div>
+                  <label className="sub-label block mb-1 text-rose-900 font-semibold">
+                    Took loan from (Friend / Person name) *
+                  </label>
+                  <input
+                    type="text"
+                    required={isLoan}
+                    value={lenderOrBorrower}
+                    onChange={(e) => setLenderOrBorrower(e.target.value)}
+                    placeholder="e.g. Rahul, John, Roommate"
+                    className="w-full h-8 px-2.5 border border-rose-300 rounded bg-white text-[#09090B] text-xs font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="sub-label block mb-1 text-rose-900 font-semibold">
+                    Repayment Target Date (Optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={repaymentDueDate}
+                    onChange={(e) => setRepaymentDueDate(e.target.value)}
+                    className="w-full h-8 px-2 border border-rose-300 rounded bg-white text-[#09090B] font-mono text-xs"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
